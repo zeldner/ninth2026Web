@@ -1,0 +1,77 @@
+step 1. Create the App
+
+npx create-next-app@latest my-supabase-app --typescript --tailwind --eslint
+
+2. Install the Supabase Library 
+npm install @supabase/supabase-js
+
+
+
+step 2 :  The "Cloud Foundation" (The Database)
+
+Sign Up: Go to Supabase.com.
+
+New Project: Name it Waitlist2026.
+password : ***
+Region : Europe(Frankfurt)
+we wont the database to be as physically close to us as possible. usually +- 50-70 ms.
+
+Table Editor: * Click "New Table" called orders.
+
+Add a column: email (Type: text, Unique: Checked).
+
+Click Save.
+
+Get the Keys: 
+
+in .env.local : 
+NEXT_PUBLIC_SUPABASE_URL=https://[your Project ID].supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[your Public api key]
+
+Project ID : Project Settings > general
+Public api key : Project Settings > API
+
+
+
+
+step 1. Create the Next.js Project (v16)
+npx create-next-app@latest my-waitlist --typescript --tailwind --eslint
+
+	src/ directory: Yes
+	App Router: Yes
+	Turbopack: Yes (or alias as your default dev command)
+	Import alias: @/*
+
+ my-waitlist/
+
+├── src/
+│   ├── app/            <--  Routes & Pages
+│   │   ├── layout.tsx
+│   │   └── page.tsx
+│   ├── components/     <-- Shadcn/UI parts
+│   └── lib/            <-- Database & Config
+├── prisma/             <-- Database Schema
+├── .env                <-- Environment Variables
+├── package.json
+└── tailwind.config.ts
+    
+    
+npm install zod
+
+
+step 3.  The Client (src/lib/supabase.ts)
+This is the single bridge between the app and the database.
+
+step 4. The Actions (src/app/actions.ts)
+This is where the Protection happens. We validate the email before it touches Supabase.
+
+step 5. The Main Page (src/app/page.tsx)
+the UI fetches data directly. No useEffect needed!
+
+
+
+
+
+npm run dev
+
+
