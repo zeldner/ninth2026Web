@@ -42,20 +42,6 @@ npx create-next-app@latest my-waitlist --typescript --tailwind --eslint
 	Turbopack: Yes (or alias as your default dev command)
 	Import alias: @/*
 
- my-waitlist/
-
-├── src/
-│   ├── app/            <--  Routes & Pages
-│   │   ├── layout.tsx
-│   │   └── page.tsx
-│   ├── components/     <-- Shadcn/UI parts
-│   └── lib/            <-- Database & Config
-├── prisma/             <-- Database Schema
-├── .env                <-- Environment Variables
-├── package.json
-└── tailwind.config.ts
-    
-    
 npm install zod
 
 
@@ -67,9 +53,6 @@ This is where the Protection happens. We validate the email before it touches Su
 
 step 5. The Main Page (src/app/page.tsx)
 the UI fetches data directly. No useEffect needed!
-
-
-
 
 
 npm run dev
