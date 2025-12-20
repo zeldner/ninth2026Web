@@ -58,3 +58,17 @@ the UI fetches data directly. No useEffect needed!
 npm run dev
 
 
+Vercel is the home of Next.js. While our database lives in Frankfurt (Supabase), our website's 'brain' lives on Vercel's global network
+
+"When to Use" :
+
+Use Traditional (Method 1) when:
+Imagine we are building the software for a bank or an airplane. We need to control every single screw in the engine. We don't mind that it takes longer to build because 'safety through total ownership' is our goal.
+
+Use Lean (Method 2) when:
+Imagine we are building a small 'To-Do' list just for yourself or a quick demo for a friend. We don't care about complex logic or high-level security; we just want to see data on the screen in 5 minutes.
+
+Use Modern (Method 3) when:
+Imagine we are starting a real company like 'Waitlist 2026'. You need to move fast, we want it to look professional on phones , and we want it to be secure without spending 10 hours fixing connection errors. This is the industry standard today."
+
+Architectural Thinking  :  Senior Developer doesn't just "write code"—we choose the right tool for the right job.

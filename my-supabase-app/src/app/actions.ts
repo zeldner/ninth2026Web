@@ -1,5 +1,5 @@
 // Ilya Zeldner
-"use server";
+"use server"; // Next.js Server Action
 
 import { supabase } from "@/lib/supabase";
 import { revalidatePath } from "next/cache";
@@ -9,26 +9,26 @@ const TABLE_NAME = "Waitlist2026"; // Supabase Table Name
 
 // Protection Schema (Using Regex to avoid the 'email' deprecation warning)
 const EmailSchema = z
-  .string()
-  .min(1, "Email is required")
-  .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format");
+  .string() 
+  .min(1, "Email is required") // Non-empty check
+  .regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "Invalid email format"); // Basic email format check
 
 // Add a new student to the waitlist
 export async function addEmail(formData: FormData): Promise<void> {
-  const rawEmail = formData.get("email") as string;
+  const rawEmail = formData.get("email") as string; // Extract email from form data
 
   // Zod Validation (The Firewall)
-  const validated = EmailSchema.safeParse(rawEmail);
+  const validated = EmailSchema.safeParse(rawEmail); // Validate email
 
   if (!validated.success) {
-    console.error("❌ Validation Failed:", validated.error.issues[0].message);
+    console.error("❌ Validation Failed:", validated.error.issues[0].message); // Log validation error
     return;
   }
 
   // Database Insert (The Frankfurt Connection)
   const { error } = await supabase
     .from(TABLE_NAME)
-    .insert([{ email: validated.data }]);
+    .insert([{ email: validated.data }]); // Insert validated email
 
   if (error) {
     // Handle the "Unique" error (Postgres code 23505)
@@ -40,7 +40,7 @@ export async function addEmail(formData: FormData): Promise<void> {
     return;
   }
 
-  console.log("✅ Success: Added", validated.data);
+  console.log("✅ Success: Added", validated.data); // Log success
 
   // Refresh the UI
   revalidatePath("/");
@@ -49,10 +49,10 @@ export async function addEmail(formData: FormData): Promise<void> {
 // Remove a student from the waitlist
 
 export async function deleteEmail(id: number): Promise<void> {
-  const { error } = await supabase.from(TABLE_NAME).delete().eq("id", id);
+  const { error } = await supabase.from(TABLE_NAME).delete().eq("id", id); // Delete by ID
 
   if (error) {
-    console.error("❌ Delete Error:", error.message);
+    console.error("❌ Delete Error:", error.message); 
     return;
   }
 

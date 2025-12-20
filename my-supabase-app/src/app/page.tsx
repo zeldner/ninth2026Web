@@ -2,13 +2,21 @@
 import { supabase } from "@/lib/supabase";
 import { addEmail, deleteEmail } from "./actions";
 
-const TABLE_NAME = "Waitlist2026";
+const TABLE_NAME = "Waitlist2026"; // Supabase Table Name
 export default async function Page() {
   // Fetch Data and Count
   const { data: entries, count } = await supabase
     .from(TABLE_NAME)
-    .select("*", { count: "exact" })
+    .select("*", { count: "exact" }) // Get exact count
     .order("created_at", { ascending: false });
+  // The * (Star) : This represents "All Columns."
+  // When we write .select('*'), we are telling Supabase: "I want every piece of information for each row." This includes the id, the email, and the created_at timestamp.
+  // It is the standard way to fetch the full record of each student in your waitlist.
+  // The count: 'exact'
+  // This is a special instruction for the Database Engine. Usually, a database just returns the rows of data. However, by adding { count: 'exact' }, you are asking Supabase to perform two jobs at once:
+  // 1.Fetch the rows (the list of emails).
+  // 2. Calculate the total (the exact number of rows in the table).
+  // This returns a separate variable called count. It is much faster to let the database count the rows in Frankfurt than to download thousands of emails and count them in your code using .length.
 
   return (
     <main className="p-10 max-w-lg mx-auto font-sans">
