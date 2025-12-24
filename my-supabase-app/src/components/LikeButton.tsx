@@ -1,17 +1,25 @@
 // Ilya Zeldner
 "use client";
 
-import { useState } from "react";
+import { incrementLikes } from "@/app/actions"; // The Action that updates the Database
 
-export default function LikeButton() {
-  const [likes, setLikes] = useState(0);
-
+// pass the student's ID and current likes as "props"
+export default function LikeButton({
+  id,
+  initialLikes,
+}: {
+  id: string;
+  initialLikes: number;
+}) {
   return (
     <button
-      onClick={() => setLikes(likes + 1)}
-      className="bg-pink-100 text-black p-2 rounded"
+      onClick={async () => {
+        // This is where the PURE FRONT (Click) talks to the BACK (Action)
+        await incrementLikes(id);
+      }}
+      className="bg-red-50 hover:bg-red-100 text-red-500 px-3 py-1 rounded-full text-sm border border-red-200 transition"
     >
-      ❤️ {likes} Likes
+      ❤️ {initialLikes} {initialLikes === 1 ? "like" : "likes"}
     </button>
   );
 }
