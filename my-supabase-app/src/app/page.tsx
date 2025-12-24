@@ -1,14 +1,25 @@
 // Ilya Zeldner
 import { supabase } from "@/lib/supabase";
 import { addEmail, deleteEmail } from "./actions";
+import LikeButton from "@/components/LikeButton";
 
 const TABLE_NAME = "Waitlist2026"; // Supabase Table Name
+
+interface WaitlistEntry {
+  id: string;
+  email: string;
+  created_at: string;
+}
+
 export default async function Page() {
   // Fetch Data and Count
   const { data: entries, count } = await supabase
     .from(TABLE_NAME)
     .select("*", { count: "exact" }) // Get exact count
     .order("created_at", { ascending: false });
+
+  const waitlist = entries as WaitlistEntry[] | null;
+
   // The * (Star) : This represents "All Columns."
   // When we write .select('*'), we are telling Supabase: "I want every piece of information for each row." This includes the id, the email, and the created_at timestamp.
   // It is the standard way to fetch the full record of each student in your waitlist.
@@ -19,64 +30,74 @@ export default async function Page() {
   // This returns a separate variable called count. It is much faster to let the database count the rows in Frankfurt than to download thousands of emails and count them in your code using .length.
 
   return (
-    <main className="p-10 max-w-lg mx-auto font-sans">
-      <h1 className="text-3xl font-bold mb-2">Waitlist 2026</h1>
-      <p className="text-gray-500 mb-8">
-        Current Students: <span className="font-bold text-black">{count}</span>
-      </p>
-
-      {/* CREATE FORM */}
-      <form action={addEmail} className="flex gap-2 mb-10">
-        <input
-          name="email"
-          type="email"
-          placeholder="Enter student email"
-          className="border p-2 rounded flex-1 text-black"
-          required
-        />
-        <button
-          type="submit"
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-        >
-          Join
-        </button>
-      </form>
-
-      {/* READ & DELETE LIST */}
-      <div className="bg-white shadow-sm border border-gray-200 rounded-xl overflow-hidden">
-        <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-          <h2 className="text-sm font-bold text-gray-600 uppercase tracking-wider">
-            Registrations ({count})
-          </h2>
+    <main className="max-w-xl mx-auto p-10 font-sans text-slate-900">
+      {/* HEADER SECTION */}
+      <div className="flex justify-between items-center mb-10 border-b pb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-blue-600">Waitlist 2026</h1>
+          {/* Using 'count' here removes the "unused" warning */}
+          <p className="text-sm text-slate-500 font-medium">
+            Total Students: <span className="text-blue-600">{count ?? 0}</span>
+          </p>
         </div>
 
-        <ul className="divide-y divide-gray-100">
-          {entries?.map((entry) => (
-            <li
-              key={entry.id}
-              className="p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-gray-50 transition-colors"
-            >
-              <div className="flex flex-col">
-                <span className="text-gray-900 font-medium">{entry.email}</span>
-                {/* Format the date nicely */}
-                <span className="text-xs text-gray-400">
-                  Added:{" "}
-                  {new Date(entry.created_at).toLocaleDateString("he-IL")}
-                </span>
-              </div>
-
-              <form
-                action={deleteEmail.bind(null, entry.id)}
-                className="mt-2 sm:mt-0"
-              >
-                <button className="text-red-500 hover:text-red-700 text-sm font-semibold p-1">
-                  Remove
-                </button>
-              </form>
-            </li>
-          ))}
-        </ul>
+        {/* PURE FRONT-END COMPONENT */}
+        <div className="flex flex-col items-center gap-1">
+          <span className="text-[10px] uppercase tracking-widest text-slate-400">
+            Interactive
+          </span>
+          <LikeButton />
+        </div>
       </div>
+
+      {/* INPUT FORM (Connects to actions.ts) */}
+      <section className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-10 shadow-sm">
+        <h2 className="text-lg font-semibold mb-4 text-slate-800">
+          Add to Database
+        </h2>
+        <form action={addEmail} className="flex flex-col gap-3">
+          <input
+            name="email"
+            type="email"
+            placeholder="student@example.com"
+            required
+            className="p-3 rounded-lg border border-slate-300 text-black outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          />
+          <button
+            type="submit"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-all active:scale-95"
+          >
+            Join Waitlist
+          </button>
+        </form>
+      </section>
+
+      {/* THE LIST (Fetched from Server) */}
+      <section>
+        <h3 className="text-xl font-bold mb-4 text-slate-800">
+          Verified Entries
+        </h3>
+        <ul className="divide-y divide-slate-100 bg-white rounded-lg border border-slate-100 shadow-sm">
+          {/* If waitlist exists, we map through it */}
+          {waitlist && waitlist.length > 0 ? (
+            waitlist.map((user) => (
+              <li
+                key={user.id}
+                className="p-4 flex justify-between items-center hover:bg-slate-50 transition-colors"
+              >
+                <span className="font-medium text-slate-700">{user.email}</span>
+                <span className="text-xs text-slate-400 tabular-nums">
+                  {new Date(user.created_at).toLocaleDateString()}
+                </span>
+              </li>
+            ))
+          ) : (
+            <li className="p-10 text-center text-slate-400 italic">
+              No students joined yet.
+            </li>
+          )}
+        </ul>
+      </section>
     </main>
   );
 }
