@@ -56,14 +56,8 @@ export default async function Page() {
     <main className="max-w-4xl mx-auto p-10 font-sans text-black">
       <div className="flex justify-between items-center border-b pb-6 mb-10">
         <h1 className="text-3xl font-black text-blue-700 uppercase tracking-tighter">
-          Admin Portal
+          Student Waitlist 2026
         </h1>
-        <div className="text-right">
-          <p className="text-xs font-bold text-gray-400">CURRENT VISITOR IP</p>
-          <p className="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">
-            {ip}
-          </p>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
