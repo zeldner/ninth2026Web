@@ -4,121 +4,156 @@ import { supabase } from "@/lib/supabase";
 import { addEmail, deleteEmail } from "./actions";
 import LikeButton from "@/components/LikeButton";
 
-const Table_Name = "Waitlist2026";
-const Ip_Table = "traffic";
+const TABLE_NAME = "Waitlist2026";
+const IP_Table = "traffic";
+
 export default async function Page() {
-  // TRAFFIC LOGIC (The Counter)
+  // CAPTURE IP
   const headerList = await headers(); // Get request headers
-  const ip = headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1"; // Fallback for local dev
+  const ip = headerList.get("x-forwarded-for")?.split(",")[0] || "127.0.0.1"; // Fallback IP
 
-  // Upsert the IP address with the current timestamp
-  await supabase
-    .from(Ip_Table)
-    .upsert(
-      { ip_address: ip, last_visit: new Date().toISOString() },
-      { onConflict: "ip_address" }
-    );
+  // TRAFFIC LOGIC
+  try {
+    const { data: existing } = await supabase
+      .from(IP_Table)
+      .select("*") // Select all columns
+      .eq("ip_address", ip) // Filter by IP address
+      .single(); // Expect a single record
 
-  // DATA FETCHING ---
+    if (existing) {
+      await supabase
+        .from(IP_Table)
+        .update({
+          visit_count: (existing.visit_count || 0) + 1,
+          last_visit: new Date().toISOString(),
+        }) // Update visit count and last visit
+        .eq("ip_address", ip);
+    } else {
+      await supabase.from(IP_Table).insert([
+        {
+          ip_address: ip, // Insert new record
+          visit_count: 1, // Initial visit count
+          last_visit: new Date().toISOString(), // Current timestamp
+        },
+      ]);
+    }
+  } catch (e) {
+    console.error("Traffic Log Error:", e);
+  }
+
+  // DATA FETCHING
   const { data: waitlist } = await supabase
-    .from(Table_Name)
-    .select("*")
-    .order("created_at", { ascending: false });
+    .from(TABLE_NAME) // Select from waitlist table
+    .select("*") // Select all columns
+    .order("created_at", { ascending: false }); // Order by creation date descending
 
-  const { data: trafficLogs } = await supabase
-    .from(Ip_Table)
+  const { data: trafficLogs, error: trafficError } = await supabase
+    .from(IP_Table)
     .select("*")
     .order("last_visit", { ascending: false });
 
   return (
-    <main className="max-w-2xl mx-auto p-10 text-black font-sans">
-      <h1 className="text-3xl font-bold mb-8 text-blue-600">Admin Dashboard</h1>
+    <main className="max-w-4xl mx-auto p-10 font-sans text-black">
+      <div className="flex justify-between items-center border-b pb-6 mb-10">
+        <h1 className="text-3xl font-black text-blue-700 uppercase tracking-tighter">
+          Admin Portal
+        </h1>
+        <div className="text-right">
+          <p className="text-xs font-bold text-gray-400">CURRENT VISITOR IP</p>
+          <p className="font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded">
+            {ip}
+          </p>
+        </div>
+      </div>
 
-      {/* --- WAITLIST SECTION --- */}
-      <section className="mb-12">
-        <h2 className="text-xl font-semibold mb-4">Student Waitlist</h2>
-        <form action={addEmail} className="flex gap-2 mb-6">
-          <input
-            name="email"
-            type="email"
-            placeholder="Student Email"
-            required
-            className="flex-1 p-2 border rounded"
-          />
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* LEFT: WAITLIST (2 Columns wide) */}
+        <div className="lg:col-span-2">
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <span className="w-2 h-6 bg-blue-600 rounded-full"></span>
+            Student Waitlist
+          </h2>
+
+          <form
+            action={addEmail}
+            className="flex gap-2 mb-8 bg-gray-50 p-4 rounded-xl border"
           >
-            Add Student
-          </button>
-        </form>
-
-        <ul className="space-y-4">
-          {waitlist?.map((user: any) => (
-            <li
-              key={user.id}
-              className="p-4 bg-white border rounded-lg flex justify-between items-center shadow-sm"
+            <input
+              name="email"
+              type="email"
+              placeholder="student@example.com"
+              required
+              className="flex-1 p-3 rounded-lg border border-gray-300"
+            />
+            <button
+              type="submit"
+              className="bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition"
             >
-              <div className="flex flex-col gap-2">
-                <span className="font-medium text-lg">{user.email}</span>
-                {/* INDIVIDUAL LIKES: Each student gets their own button linked to their ID */}
-                <div className="flex items-center gap-2">
+              Add
+            </button>
+          </form>
+
+          <div className="grid gap-4">
+            {waitlist?.map((user: any) => (
+              <div
+                key={user.id}
+                className="p-5 border rounded-xl flex justify-between items-center hover:shadow-md transition bg-white"
+              >
+                <div>
+                  <p className="font-bold text-lg">{user.email}</p>
                   <LikeButton id={user.id} initialLikes={user.likes || 0} />
-                  <span className="text-xs text-gray-400 italic">
-                    Saved in DB
+                </div>
+                <form action={deleteEmail}>
+                  <input type="hidden" name="studentId" value={user.id} />
+                  <button
+                    type="submit"
+                    className="bg-red-50 text-red-600 px-4 py-2 rounded-lg text-xs font-bold hover:bg-red-600 hover:text-white transition"
+                  >
+                    DELETE
+                  </button>
+                </form>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT: TRAFFIC (1 Column wide) */}
+        <div className="bg-slate-900 text-white p-6 rounded-2xl h-fit shadow-2xl">
+          <h2 className="text-lg font-bold mb-6 text-blue-400">Live Traffic</h2>
+
+          {trafficError && (
+            <p className="text-red-400 text-xs">
+              Error: {trafficError.message}
+            </p>
+          )}
+
+          <div className="space-y-4">
+            {trafficLogs?.map((log: any) => (
+              <div
+                key={log.id}
+                className="border-b border-slate-700 pb-3 last:border-0"
+              >
+                <p className="font-mono text-sm text-blue-300">
+                  {log.ip_address}
+                </p>
+                <div className="flex justify-between mt-1">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold">
+                    Visits: {log.visit_count}
+                  </span>
+                  <span className="text-[10px] text-slate-500">
+                    {new Date(log.last_visit).toLocaleTimeString()}
                   </span>
                 </div>
               </div>
-
-              <form action={deleteEmail}>
-                <input type="hidden" name="studentId" value={user.id} />
-                <button
-                  type="submit"
-                  className="text-red-500 hover:bg-red-50 px-3 py-1 rounded border border-red-100 transition"
-                >
-                  Delete
-                </button>
-              </form>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* --- TRAFFIC TABLE --- */}
-      <section className="mt-16 pt-8 border-t border-gray-200">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">
-          Visitor Traffic
-        </h2>
-        <div className="overflow-hidden rounded-xl border border-gray-200 shadow-sm">
-          <table className="min-w-full bg-white">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
-                  IP Address
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase">
-                  Last Visit
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {trafficLogs?.map((log: any) => (
-                <tr
-                  key={log.id}
-                  className="hover:bg-blue-50/50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-sm font-mono text-blue-700">
-                    {log.ip_address}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {new Date(log.last_visit).toLocaleString("he-IL")}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+            ))}
+            {(!trafficLogs || trafficLogs.length === 0) && (
+              <p className="text-slate-500 italic text-sm text-center py-10">
+                No traffic recorded.
+              </p>
+            )}
+          </div>
         </div>
-      </section>
+      </div>
     </main>
   );
 }
