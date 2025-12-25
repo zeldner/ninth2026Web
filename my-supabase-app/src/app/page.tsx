@@ -135,7 +135,11 @@ export default async function Page() {
                     Visits: {log.visit_count}
                   </span>
                   <span className="text-[10px] text-slate-500">
-                    {new Date(log.last_visit).toLocaleTimeString()}
+                    {new Date(log.last_visit).toLocaleTimeString("he-IL", {
+                      timeZone: "Asia/Jerusalem",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </span>
                 </div>
               </div>
