@@ -170,13 +170,6 @@ export default async function Page() {
                         ? "🏠 Ilya Zeldner"
                         : log.ip_address}
                     </p>
-                    <p className="text-[10px] text-slate-500 font-bold">
-                      {new Date(log.last_visit).toLocaleTimeString("he-IL", {
-                        timeZone: "Asia/Jerusalem",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </p>
                   </div>
 
                   {/* VISITS COUNTER */}
